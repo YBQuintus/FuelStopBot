@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static FuelStopBot.FuelStopService.FuelStopService;
 
-namespace Example.Modules
+namespace FuelStopBot.Modules
 {
     internal class PitStopModule
     {

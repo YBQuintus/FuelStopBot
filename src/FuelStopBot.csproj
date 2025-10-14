@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
-    <RootNamespace>Example</RootNamespace>
+    <RootNamespace>FuelStopBot</RootNamespace>
     <LangVersion>latest</LangVersion>
     <UserSecretsId>ad05bea0-57d0-4997-a2af-29a443eb8885</UserSecretsId>
   </PropertyGroup>

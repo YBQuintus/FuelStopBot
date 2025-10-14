@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Example.Modules
+namespace FuelStopBot.Modules
 {
     public class MathModule : InteractionModuleBase<SocketInteractionContext>
     {
