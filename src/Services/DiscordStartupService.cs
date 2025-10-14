@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Example.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;

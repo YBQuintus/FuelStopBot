@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 
-namespace Example
+namespace Example.Utility
 {
     public static class LogHelper
     {
