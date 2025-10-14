@@ -37,7 +37,7 @@ namespace FuelStopBot.CalcServices
             int pushStintLength = (int)(100 / virtualEnergyUnitsPerLap);
             int currentStintLength = 0;
             int currentStintNumber = 1;
-            List<int> stintAndStintLength = [];
+            List<int> stintAndStintLength = new List<int>();
             while (raceDuration > 0)
             {
                 VE -= virtualEnergyUnitsPerLap;
@@ -74,7 +74,7 @@ namespace FuelStopBot.CalcServices
             }
             Console.WriteLine($"Stint {currentStintNumber} was {currentStintLength} laps.");
             return stintAndStintLength;
-        }
+        } 
 
         static int AllowedTires(int durationHour)
         {

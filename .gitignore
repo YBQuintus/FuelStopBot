@@ -68,6 +68,7 @@ artifacts/
 *.pidb
 *.svclog
 *.scc
+*.env
 
 # Chutzpah Test files
 _Chutzpah*
@@ -251,4 +252,3 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
-/secrets.env
