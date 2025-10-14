@@ -1,10 +1,3 @@
-Last updated for `3.10.0`
-
-## Discord.Net-Example
-An example bot for [Discord.Net](https://github.com/discord-net/Discord.Net). If you would like a more specific example for your use case, ask for help in the [Discord API](https://discordapp.com/invite/discord-api) server with your request or [open a discussion](https://github.com/discord-net/Discord.Net/discussions/categories/q-a).
-
-This example assumes you have an `_config.yml` file that contains `token: value` saved in the build's root directory. 
-
-### Other Examples
-- [Patek](https://github.com/foxbot/patek) by foxbot
-- [Dogey](https://github.com/Aux/Dogey) by Auxesis
+## FuelStopBot
+Based on example Discord.NET bot from [Aux](https://github.com/Aux/Discord.Net-Example)
+(Tries to) calculate the best fuel strategy for a race in LMU based on race length and average lap time.
