@@ -27,7 +27,7 @@ namespace FuelStopBot.Services
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _discord.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("token"));
+            await _discord.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("DISCORD_BOT_TOKEN"));
             await _discord.StartAsync();
         }
 

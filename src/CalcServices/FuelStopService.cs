@@ -29,7 +29,7 @@ namespace FuelStopBot.CalcServices
             LapTime = lapTimeIn;
         }
 
-        public Dictionary<int, int> FullPush()
+        public List<int> FullPush()
         {
             float VE = 100;
             int tiresRemaining = AllowedTires((int)raceDuration / 3600) - 4;
@@ -37,7 +37,7 @@ namespace FuelStopBot.CalcServices
             int pushStintLength = (int)(100 / virtualEnergyUnitsPerLap);
             int currentStintLength = 0;
             int currentStintNumber = 1;
-            Dictionary<int, int> stintAndStintLength = [];
+            List<int> stintAndStintLength = [];
             while (raceDuration > 0)
             {
                 VE -= virtualEnergyUnitsPerLap;
@@ -63,7 +63,7 @@ namespace FuelStopBot.CalcServices
                         Console.WriteLine($"{tiresRemaining} tires changed, 0 tires remaining.");
                         tiresRemaining = 0;
                     }
-                    stintAndStintLength.Add(currentStintNumber, currentStintLength);
+                    stintAndStintLength.Add(currentStintLength);
                     currentStintLength = 0;
                     currentStintNumber++;
                 }
