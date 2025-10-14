@@ -22,18 +22,11 @@ namespace FuelStopBot.FuelStopService
             { 4, 12 }
         };
         private static Dictionary<int, int> stintAndStintLength = new Dictionary<int, int>();
-        public static void Main()
+        public static void SetVariables(float veUnitsPerLap, float raceDurationIn, float lapTimeIn)
         {
-            Console.WriteLine("Race duration? (H:MM)");
-            string raceDurationInput = Console.ReadLine()!;
-            string[] raceDurationParts = raceDurationInput.Split(':');
-            raceDuration = (float)(TimeSpan.FromHours(int.Parse(raceDurationParts[0])) + TimeSpan.FromMinutes(int.Parse(raceDurationParts[1]))).TotalSeconds;
-            Console.WriteLine("Lap time? (M:SS.sss)");
-            string lapTimeInput = Console.ReadLine()!;
-            string[] lapTimeParts = lapTimeInput.Split(':');
-            lapTime = (float)(TimeSpan.FromMinutes(int.Parse(lapTimeParts[0])) + TimeSpan.FromSeconds(float.Parse(lapTimeParts[1]))).TotalSeconds;
-            Console.WriteLine("VE per lap? (%)");
-            virtualEnergyUnitsPerLap = float.Parse(Console.ReadLine()!);
+            virtualEnergyUnitsPerLap = veUnitsPerLap;
+            raceDuration = raceDurationIn;
+            lapTime = lapTimeIn;
             FullPush();
         }
 
