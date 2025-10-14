@@ -1,0 +1,6 @@
+services:
+  fuelstopbot:
+    image: ${DOCKER_REGISTRY-}fuelstopbot
+    build:
+      context: .
+      dockerfile: src\Dockerfile
