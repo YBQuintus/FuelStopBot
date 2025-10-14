@@ -5,6 +5,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <RootNamespace>Example</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <UserSecretsId>ad05bea0-57d0-4997-a2af-29a443eb8885</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
