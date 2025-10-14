@@ -4,6 +4,7 @@ using FuelStopBot.Utility;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,7 +27,7 @@ namespace FuelStopBot.Services
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await _discord.LoginAsync(TokenType.Bot, _config["token"]);
+            await _discord.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("token"));
             await _discord.StartAsync();
         }
 
