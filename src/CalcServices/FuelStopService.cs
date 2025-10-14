@@ -4,15 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FuelStopBot.FuelStopService
+namespace FuelStopBot.CalcServices
 {
-    internal class FuelStopService
+    public class FuelStopService
     {
         private static readonly float secondsPerVirtualEnergyUnit = 0.4f;
-        private static float virtualEnergyUnitsPerLap = 0;
-        private static float raceDuration = 0;
-        private static float lapTime = 0;
-        private static int pitStopAddtionalTimeLoss = 25;
+        private float virtualEnergyUnitsPerLap = 0;
+        private float raceDuration = 0;
+        public float LapTime { get; private set; } = 0;
+        private static int pitStopAddtionalTimeLoss = 27;
         private readonly static Dictionary<int, int> tireChangeTime = new Dictionary<int, int>()
         {
             { 0, 0 },
@@ -22,15 +22,15 @@ namespace FuelStopBot.FuelStopService
             { 4, 12 }
         };
         private static Dictionary<int, int> stintAndStintLength = new Dictionary<int, int>();
-        public static void SetVariables(float veUnitsPerLap, float raceDurationIn, float lapTimeIn)
+
+        public FuelStopService(float veUnitsPerLap, float raceDurationIn, float lapTimeIn)
         {
             virtualEnergyUnitsPerLap = veUnitsPerLap;
             raceDuration = raceDurationIn;
-            lapTime = lapTimeIn;
-            FullPush();
+            LapTime = lapTimeIn;
         }
 
-        static void FullPush()
+        void FullPush()
         {
             float VE = 100;
             int tiresRemaining = AllowedTires((int)raceDuration / 3600) - 4;
@@ -41,13 +41,13 @@ namespace FuelStopBot.FuelStopService
             while (raceDuration > 0)
             {
                 VE -= virtualEnergyUnitsPerLap;
-                raceDuration -= lapTime;
+                raceDuration -= LapTime;
                 currentStintLength++;
                 if (VE < virtualEnergyUnitsPerLap && raceDuration > 0)
                 {
                     // Pit stop
                     raceDuration -= pitStopAddtionalTimeLoss;
-                    VERequired = ((int)raceDuration / lapTime) < pushStintLength ? (int)raceDuration / (int)lapTime * virtualEnergyUnitsPerLap + virtualEnergyUnitsPerLap : 100;
+                    VERequired = (int)raceDuration /   LapTime < pushStintLength ? (int)raceDuration / (int)LapTime * virtualEnergyUnitsPerLap + virtualEnergyUnitsPerLap : 100;
                     raceDuration -= (VERequired - VE) * secondsPerVirtualEnergyUnit;
                     Console.WriteLine($"Stint {currentStintNumber}: Pit stop after {currentStintLength} laps, {VERequired - VE} VE added, {TimeSpan.FromSeconds(raceDuration)} remaining.");
                     VE = VERequired;
@@ -66,7 +66,7 @@ namespace FuelStopBot.FuelStopService
                     currentStintLength = 0;
                     currentStintNumber++;
                 }
-                if (raceDuration < lapTime && raceDuration > 0)
+                if (raceDuration < LapTime && raceDuration > 0)
                 {
                     Console.WriteLine($"{raceDuration} seconds remaining on last lap");
                 }

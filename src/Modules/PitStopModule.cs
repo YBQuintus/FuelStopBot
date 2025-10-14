@@ -1,19 +1,18 @@
 ﻿using Discord.Interactions;
+using FuelStopBot.CalcServices;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using static FuelStopBot.FuelStopService.FuelStopService;
+using static FuelStopBot.CalcServices.FuelStopService;
 
 namespace FuelStopBot.Modules
 {
     public class PitStopModule : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("pitstops", "Calculate fuel strategy for a race")]
-        public async Task PitStops(float veUnitsPerLap, float raceDurationIn, float lapTimeIn)
+        public async Task PitStops(float VirtualEnergyPerLap, float RaceDuration, float AverageLapTime)
         {
-            await RespondAsync("Calculating...", ephemeral: true);
+            var fuelStopService = new FuelStopService(VirtualEnergyPerLap, RaceDuration, AverageLapTime);
+            await RespondAsync($"Calculating...{fuelStopService.LapTime}", ephemeral: true);
         }
     }
 }
