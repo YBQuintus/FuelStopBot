@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FuelStopBot.CalcServices
 {
@@ -47,7 +44,7 @@ namespace FuelStopBot.CalcServices
                 {
                     // Pit stop
                     raceDuration -= pitStopAddtionalTimeLoss;
-                    VERequired = (int)raceDuration /   LapTime < pushStintLength ? (int)raceDuration / (int)LapTime * virtualEnergyUnitsPerLap + virtualEnergyUnitsPerLap : 100;
+                    VERequired = (int)raceDuration / LapTime < pushStintLength ? (int)raceDuration / (int)LapTime * virtualEnergyUnitsPerLap + virtualEnergyUnitsPerLap : 100;
                     raceDuration -= (VERequired - VE) * secondsPerVirtualEnergyUnit;
                     Console.WriteLine($"Stint {currentStintNumber}: Pit stop after {currentStintLength} laps, {VERequired - VE} VE added, {TimeSpan.FromSeconds(raceDuration)} remaining.");
                     VE = VERequired;
@@ -74,7 +71,7 @@ namespace FuelStopBot.CalcServices
             }
             Console.WriteLine($"Stint {currentStintNumber} was {currentStintLength} laps.");
             return stintAndStintLength;
-        } 
+        }
 
         static int AllowedTires(int durationHour)
         {
