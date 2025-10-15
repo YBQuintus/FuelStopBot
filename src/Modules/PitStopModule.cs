@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using FuelStopBot.CalcServices;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -8,12 +9,15 @@ using System.Threading.Tasks;
 
 namespace FuelStopBot.Modules
 {
-    public class PitStopModule : InteractionModuleBase<SocketInteractionContext>
+    public class PitStopModule(ILogger<PitStopModule> logger) : InteractionModuleBase<SocketInteractionContext>
     {
-        [SlashCommand("fuelstrat", "Calculate fuel strategy for a race")]
+
+        private readonly ILogger<PitStopModule> _logger = logger;
+
+        [SlashCommand("fuelstrat", "Calculate fuel strategy for a racetest")]
         public async Task PitStops(string VirtualEnergyPerLap, string RaceDurationInHours, string AverageLapTime)
         {
-            await DeferAsync(ephemeral: true); // Must be first
+            await DeferAsync(ephemeral: true);
 
             if (!float.TryParse(VirtualEnergyPerLap, out float veFloat) ||
                 !int.TryParse(RaceDurationInHours, out int raceHours) ||
@@ -24,26 +28,28 @@ namespace FuelStopBot.Modules
             }
 
             var fuelStopService = new FuelStopService(veFloat, raceHours * 3600, averageLapTimeInt);
-            var embed = (await BuildResponse(fuelStopService.FullPush())).Build();
+            var embed = (await BuildResponse(await fuelStopService.FullPushAsync())).Build();
 
             await FollowupAsync($"✅ Fuel strategy for a {RaceDurationInHours} hour race:", embed: embed);
         }
 
         private async Task<EmbedBuilder> BuildResponse(List<int> stintAndStintLength)
         {
-            var embedBuilder = new EmbedBuilder()
-                .WithTitle("Fuel Stop Calculation Results")
-                .WithColor(Color.DarkGreen);
-
-            StringBuilder stints = new($"## Stint Strategy{Environment.NewLine}");
-            for (int i = 0; i < stintAndStintLength.Count; i++)
+            return await Task.Run(() =>
             {
-                stints.AppendLine($"- Stint {i + 1}: {stintAndStintLength[i]} laps");
-            }
+                var embedBuilder = new EmbedBuilder()
+                    .WithTitle("Fuel Stop Calculation Results")
+                    .WithColor(Color.DarkGreen);
 
-            embedBuilder.WithDescription(stints.ToString());
-            return embedBuilder;
+                StringBuilder stints = new($"## Stint Strategy{Environment.NewLine}");
+                for (int i = 0; i < stintAndStintLength.Count; i++)
+                {
+                    stints.AppendLine($"- Stint {i + 1}: {stintAndStintLength[i]} laps");
+                }
+
+                embedBuilder.WithDescription(stints.ToString());
+                return embedBuilder;
+            });
         }
-
     }
 }

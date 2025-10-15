@@ -7,8 +7,14 @@ using Microsoft.Extensions.Hosting;
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
-        services.AddSingleton<DiscordSocketClient>();       // Add the discord client to services
-        services.AddSingleton<InteractionService>(provider =>
+        DiscordSocketConfig config = new()
+        {
+            UseInteractionSnowflakeDate = false
+        };
+
+        DiscordSocketClient client = new(config);
+        services.AddSingleton(client);       // Add the discord client to services
+        services.AddSingleton(provider =>
         {
             var client = provider.GetRequiredService<DiscordSocketClient>();
             return new InteractionService(client);

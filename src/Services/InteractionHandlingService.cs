@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using FuelStopBot.Utility;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,10 +40,24 @@ namespace FuelStopBot.Services
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _discord.Ready += () => _interactions.RegisterCommandsGloballyAsync(true);
-            _discord.InteractionCreated += OnInteractionAsync;
-
             await _interactions.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
+
+            _discord.Ready += async () =>
+            {
+                await _interactions.RegisterCommandsGloballyAsync();
+
+                var guild = _discord.GetGuild(1427652166667206751);
+                var commands = await guild.GetApplicationCommandsAsync();
+
+                var commandToDelete = commands.FirstOrDefault(cmd => cmd.Name == "fuelstrat");
+                if (commandToDelete != null)
+                {
+                    await commandToDelete.DeleteAsync();
+                }
+
+
+                _discord.InteractionCreated += OnInteractionAsync;
+            };
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

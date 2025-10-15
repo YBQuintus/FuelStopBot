@@ -1,5 +1,7 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FuelStopBot.CalcServices
 {
@@ -10,6 +12,7 @@ namespace FuelStopBot.CalcServices
         private float raceDuration = 0;
         public float LapTime { get; private set; } = 0;
         private static int pitStopAddtionalTimeLoss = 27;
+
         private readonly static Dictionary<int, int> tireChangeTime = new Dictionary<int, int>()
         {
             { 0, 0 },
@@ -26,51 +29,57 @@ namespace FuelStopBot.CalcServices
             LapTime = lapTimeIn;
         }
 
-        public List<int> FullPush()
+        public async Task<List<int>> FullPushAsync()
         {
-            float VE = 100;
-            int tiresRemaining = AllowedTires((int)raceDuration / 3600) - 4;
-            float VERequired = 0;
-            int pushStintLength = (int)(100 / virtualEnergyUnitsPerLap);
-            int currentStintLength = 0;
-            int currentStintNumber = 1;
-            List<int> stintAndStintLength = new List<int>();
-            while (raceDuration > 0)
+            return await Task.Run(() =>
             {
-                VE -= virtualEnergyUnitsPerLap;
-                raceDuration -= LapTime;
-                currentStintLength++;
-                if (VE < virtualEnergyUnitsPerLap && raceDuration > 0)
+                float VE = 100;
+                int tiresRemaining = AllowedTires((int)raceDuration / 3600) - 4;
+                float VERequired = 0;
+                int pushStintLength = (int)(100 / virtualEnergyUnitsPerLap);
+                int currentStintLength = 0;
+                int currentStintNumber = 1;
+                List<int> stintAndStintLength = new List<int>();
+
+                while (raceDuration > 0)
                 {
-                    // Pit stop
-                    raceDuration -= pitStopAddtionalTimeLoss;
-                    VERequired = (int)raceDuration / LapTime < pushStintLength ? (int)raceDuration / (int)LapTime * virtualEnergyUnitsPerLap + virtualEnergyUnitsPerLap : 100;
-                    raceDuration -= (VERequired - VE) * secondsPerVirtualEnergyUnit;
-                    Console.WriteLine($"Stint {currentStintNumber}: Pit stop after {currentStintLength} laps, {VERequired - VE} VE added, {TimeSpan.FromSeconds(raceDuration)} remaining.");
-                    VE = VERequired;
-                    if (tiresRemaining >= 4)
+                    VE -= virtualEnergyUnitsPerLap;
+                    raceDuration -= LapTime;
+                    currentStintLength++;
+
+                    if (VE < virtualEnergyUnitsPerLap && raceDuration > 0)
                     {
-                        tiresRemaining -= 4;
-                        raceDuration -= tireChangeTime[4];
-                        Console.WriteLine($"4 tires changed, {tiresRemaining} tires remaining.");
+                        raceDuration -= pitStopAddtionalTimeLoss;
+                        VERequired = (int)raceDuration / LapTime < pushStintLength
+                            ? (int)raceDuration / (int)LapTime * virtualEnergyUnitsPerLap + virtualEnergyUnitsPerLap
+                            : 100;
+                        raceDuration -= (VERequired - VE) * secondsPerVirtualEnergyUnit;
+                        VE = VERequired;
+
+                        if (tiresRemaining >= 4)
+                        {
+                            tiresRemaining -= 4;
+                            raceDuration -= tireChangeTime[4];
+                        }
+                        else
+                        {
+                            raceDuration -= tireChangeTime[tiresRemaining];
+                            tiresRemaining = 0;
+                        }
+
+                        stintAndStintLength.Add(currentStintLength);
+                        currentStintLength = 0;
+                        currentStintNumber++;
                     }
-                    else
+
+                    if (raceDuration < LapTime && raceDuration > 0)
                     {
-                        raceDuration -= tireChangeTime[tiresRemaining];
-                        Console.WriteLine($"{tiresRemaining} tires changed, 0 tires remaining.");
-                        tiresRemaining = 0;
+                        // Final lap logic (optional)
                     }
-                    stintAndStintLength.Add(currentStintLength);
-                    currentStintLength = 0;
-                    currentStintNumber++;
                 }
-                if (raceDuration < LapTime && raceDuration > 0)
-                {
-                    Console.WriteLine($"{raceDuration} seconds remaining on last lap");
-                }
-            }
-            Console.WriteLine($"Stint {currentStintNumber} was {currentStintLength} laps.");
-            return stintAndStintLength;
+
+                return stintAndStintLength;
+            });
         }
 
         static int AllowedTires(int durationHour)
