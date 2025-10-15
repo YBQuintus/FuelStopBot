@@ -9,7 +9,12 @@ using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services =>
     {
         services.AddSingleton<DiscordSocketClient>();       // Add the discord client to services
-        services.AddSingleton<InteractionService>();        // Add the interaction service to services
+        services.AddSingleton<InteractionService>(provider =>
+        {
+            var client = provider.GetRequiredService<DiscordSocketClient>();
+            return new InteractionService(client);
+        });
+        // Add the interaction service to services
         services.AddHostedService<InteractionHandlingService>();    // Add the slash command handler
         services.AddHostedService<DiscordStartupService>();         // Add the discord startup service
     })
