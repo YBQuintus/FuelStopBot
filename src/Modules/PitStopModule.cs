@@ -17,7 +17,7 @@ namespace FuelStopBot.Modules
         [SlashCommand("fuelstrat", "Calculate fuel strategy for a racetest")]
         public async Task PitStops(string VirtualEnergyPerLap, string RaceDurationInHours, string AverageLapTime)
         {
-            await DeferAsync(ephemeral: true);
+            await DeferAsync(ephemeral: false);
 
             if (!float.TryParse(VirtualEnergyPerLap, out float veFloat) ||
                 !int.TryParse(RaceDurationInHours, out int raceHours) ||
@@ -28,17 +28,20 @@ namespace FuelStopBot.Modules
             }
 
             var fuelStopService = new FuelStopService(veFloat, raceHours * 3600, averageLapTimeInt);
-            var embed = (await BuildResponse(await fuelStopService.FullPushAsync())).Build();
+            var (stintAndStintLength, raceDurationEnd) = await fuelStopService.FullPushAsync();
+            var embedPush = (await BuildResponse("Full Push", stintAndStintLength, raceDurationEnd)).Build();
+            var (stintAndStintLengthOptimise, raceDurationEndOptimise) = await fuelStopService.OptimiseAsync();
+            var embedOptimise = (await BuildResponse("Optimised", stintAndStintLengthOptimise, raceDurationEndOptimise)).Build();
 
-            await FollowupAsync($"✅ Fuel strategy for a {RaceDurationInHours} hour race:", embed: embed);
+            await FollowupAsync($"✅ Fuel strategy for a {RaceDurationInHours} hour race:", embeds: [embedPush, embedOptimise]);
         }
 
-        private async Task<EmbedBuilder> BuildResponse(List<int> stintAndStintLength)
+        private async Task<EmbedBuilder> BuildResponse(string head, List<int> stintAndStintLength, float raceDurationEnd)
         {
             return await Task.Run(() =>
             {
                 var embedBuilder = new EmbedBuilder()
-                    .WithTitle("Fuel Stop Calculation Results")
+                    .WithTitle(head + " Fuel Stop Calculation Results")
                     .WithColor(Color.DarkGreen);
 
                 StringBuilder stints = new($"## Stint Strategy{Environment.NewLine}");
@@ -47,6 +50,7 @@ namespace FuelStopBot.Modules
                     stints.AppendLine($"- Stint {i + 1}: {stintAndStintLength[i]} laps");
                 }
 
+                stints.AppendLine($"- Race timer at last lap: {Math.Round(raceDurationEnd, 2)} seconds");
                 embedBuilder.WithDescription(stints.ToString());
                 return embedBuilder;
             });
