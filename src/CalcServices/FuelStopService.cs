@@ -34,10 +34,11 @@ namespace FuelStopBot.CalcServices
                 float VERequired = 0;
                 int pushStintLength = (int)(100 / virtualEnergyUnitsPerLap);
                 int currentStintLength = 0;
-                int currentStintNumber = 1;
                 float raceDurationCopy = raceDuration;
                 float raceDurationEnd = 0;
                 stintLengths.Clear();
+
+                Console.WriteLine(raceDurationCopy);
 
                 while (raceDurationCopy > 0)
                 {
@@ -45,14 +46,14 @@ namespace FuelStopBot.CalcServices
                     raceDurationCopy -= LapTime;
                     currentStintLength++;
 
-                    if (VE < virtualEnergyUnitsPerLap && raceDurationCopy > 0)
+                    Console.WriteLine(raceDurationCopy);
+
+                    if (VE < 0.95f * virtualEnergyUnitsPerLap && raceDurationCopy > 0)
                     {
+                        VE = Math.Max(0, VE);
+                        Console.WriteLine($"Pit VE: {VE}");
                         raceDurationCopy -= pitStopAddtionalTimeLoss;
-                        VERequired = (int)raceDurationCopy / LapTime < pushStintLength
-                            ? (int)raceDurationCopy / (int)LapTime * virtualEnergyUnitsPerLap + virtualEnergyUnitsPerLap
-                            : 100;
-                        raceDurationCopy -= (VERequired - VE) * secondsPerVirtualEnergyUnit;
-                        
+
                         if (tiresRemaining >= 4)
                         {
                             raceDurationCopy -= tireChangeTime[4];
@@ -65,20 +66,27 @@ namespace FuelStopBot.CalcServices
                             
                             tiresRemaining = 0;
                         }
+
+                        VERequired = (int)(raceDurationCopy / LapTime) < pushStintLength
+                            ? (int)(raceDurationCopy / LapTime) * virtualEnergyUnitsPerLap + virtualEnergyUnitsPerLap
+                            : 100;
+                        raceDurationCopy -= (VERequired - VE) * secondsPerVirtualEnergyUnit;
+
+                        Console.WriteLine(raceDurationCopy);
+
                         VE = VERequired;
 
                         stintLengths.Add(currentStintLength);
                         currentStintLength = 0;
-                        currentStintNumber++;
                     }
 
                     if (raceDurationCopy < LapTime && raceDurationCopy > 0)
                     {
                         stintLengths.Add(currentStintLength + 1);
                         raceDurationEnd = raceDurationCopy;
+                        raceDurationCopy = 0;
                     }
                 }
-                Console.WriteLine(string.Join(", ", stintLengths));
                 return (stintLengths, raceDurationEnd);
             });
         }
@@ -87,43 +95,77 @@ namespace FuelStopBot.CalcServices
         {
             return await Task.Run(() =>
             {
-                int nominalStintLength = (int)(100 / virtualEnergyUnitsPerLap);
-                int tiresRemaining = AllowedTires((int)raceDuration / 3600) - 4;
-                float raceDurationCopy = raceDuration;
-                float raceDurationEnd = 0;
-                if (stintLengths[^1] < stintLengths.Count - 1)
+                /* if (stintLengths[^1] < stintLengths.Count - 1)
                 {
-                    for (int i = 0; i < stintLengths[^1]; i++)
+                    for (int i = 0; i <= stintLengths[^1]; i++)
                     {
                         stintLengths[i] = stintLengths[i] + 1;
                     }
                     stintLengths.RemoveAt(stintLengths.Count - 1);
-                }
-                for (int i = 0; i < stintLengths.Count; i++)
+                } */
+
+                float VE = 100;
+                int tiresRemaining = AllowedTires((int)raceDuration / 3600) - 4;
+                float VERequired = 0;
+                int pushStintLength = (int)(100 / virtualEnergyUnitsPerLap);
+                int currentStintNumber = 0;
+                int currentStintLength = 0;
+                float raceDurationCopy = raceDuration;
+                float raceDurationEnd = 0;
+                float virtualEnergyUsedPerLapOptimised = 0;
+                List<int> stintLengthsShadow = new List<int>();
+                Console.WriteLine(raceDurationCopy);
+                while (raceDurationCopy > 0)
                 {
-                    float racePace = LapTime * (1 + (stintLengths[i] - nominalStintLength) * 0.01f);
-                    Console.WriteLine(racePace);
-                    if (racePace * stintLengths[i] > raceDurationCopy)
+
+                    virtualEnergyUsedPerLapOptimised = 100f / stintLengths[currentStintNumber];
+                    float VEMin = Math.Min(virtualEnergyUnitsPerLap, virtualEnergyUsedPerLapOptimised);
+                    VE -= VEMin;
+
+                    Console.WriteLine(VEMin);
+
+                    float newLapTime = LapTime * (1 + Math.Max(0, stintLengths[currentStintNumber] - pushStintLength) * 0.008f);
+                    raceDurationCopy -= newLapTime;
+                    currentStintLength++;
+
+                    Console.WriteLine(raceDurationCopy);
+
+                    double VEDiff = Math.Round(VE - VEMin, 3);
+                    if (VEDiff <= -0.05f * VEMin && raceDurationCopy > 0)
                     {
-                        raceDurationCopy -= (int)(raceDurationCopy / racePace) * racePace;
-                        
-                        raceDurationEnd = raceDurationCopy;
-                    }
-                    else
-                    {
-                        raceDurationCopy -= racePace * stintLengths[i];
+                        VE = Math.Max(0, VE);
+                        Console.WriteLine($"Pit VE: {VE}, Min VE: {VEMin}");
                         raceDurationCopy -= pitStopAddtionalTimeLoss;
-                        raceDurationCopy -= 40; // refuel time
+
                         if (tiresRemaining >= 4)
                         {
-                            tiresRemaining -= 4;
                             raceDurationCopy -= tireChangeTime[4];
+                            tiresRemaining -= 4;
                         }
                         else
                         {
                             raceDurationCopy -= tireChangeTime[tiresRemaining];
                             tiresRemaining = 0;
                         }
+
+                        VERequired = (int)(raceDurationCopy / LapTime) < pushStintLength
+                            ? (int)(raceDurationCopy / LapTime) * virtualEnergyUnitsPerLap + virtualEnergyUnitsPerLap
+                            : 100;
+                        raceDurationCopy -= (VERequired - VE) * secondsPerVirtualEnergyUnit;
+
+                        Console.WriteLine(raceDurationCopy);
+                        VE = VERequired;
+                        stintLengthsShadow.Add(currentStintLength);
+                        currentStintLength = 0;
+                        currentStintNumber++;
+                    }
+
+                    if (raceDurationCopy < LapTime && raceDurationCopy > 0)
+                    {
+                        raceDurationEnd = raceDurationCopy;
+                        stintLengths[currentStintNumber] = currentStintLength + 1;
+                        stintLengthsShadow.Add(currentStintLength + 1);
+                        raceDurationCopy = 0;
                     }
                 }
                 return (stintLengths, raceDurationEnd);
@@ -142,7 +184,7 @@ namespace FuelStopBot.CalcServices
             }
             else
             {
-                return 32;
+                return 38;
             }
         }
     }
