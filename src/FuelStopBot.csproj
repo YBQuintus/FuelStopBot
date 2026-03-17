@@ -6,7 +6,7 @@
     <RootNamespace>FuelStopBot</RootNamespace>
     <LangVersion>latest</LangVersion>
     <UserSecretsId>ad05bea0-57d0-4997-a2af-29a443eb8885</UserSecretsId>
-    <DockerDefaultTargetOS>Windows</DockerDefaultTargetOS>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	  <DockerfileBuildArguments>-t ybquin/fuelstopbot:dev</DockerfileBuildArguments>
   </PropertyGroup>
 
